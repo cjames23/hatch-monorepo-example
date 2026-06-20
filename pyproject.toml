@@ -92,6 +92,17 @@ dependencies = ["ruff>=0.5"]
 [tool.hatch.envs.lint.scripts]
 check = "ruff check {args:src packages}"
 
+# --- build ---------------------------------------------------------------
+# Convenience wrapper around `scripts/build_all.py`, which builds every project
+# (root + members) and collects all wheels/sdists into a single `dist/` folder.
+# `detached = true` because the script shells out to `hatch build` per project
+# (each of which uses its own isolated build env) — this env needs no members.
+[tool.hatch.envs.build]
+detached = true
+
+[tool.hatch.envs.build.scripts]
+all = "python scripts/build_all.py {args}"
+
 # ===========================================================================
 # Tooling config
 # ===========================================================================
