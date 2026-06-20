@@ -1,0 +1,106 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ===========================================================================
+# Top-level project
+#
+# The repository root is itself a real, installable project named `my-app`.
+# It is the workspace *root* (it declares the workspace environments below)
+# AND a package in its own right, with source under `src/my_app`.
+# ===========================================================================
+[project]
+name = "my-app"
+version = "0.1.0"
+description = "Top-level application that composes the ACME workspace members"
+readme = "README.md"
+requires-python = ">=3.8"
+# NOTE: the workspace *root* project intentionally does NOT list the members
+# (`acme-core`, `acme-utils`, ...) here. Hatch installs the root project editable
+# *before* it syncs the workspace members, so a member listed here would be
+# resolved from PyPI (and fail) at root-install time. Inside the workspace the
+# members are provided by `workspace.members` below; `my_app` imports them from
+# there. (Members that depend on *each other* — see `acme-utils`/`acme-cli` — do
+# list those deps, because all members are installed together in one step.)
+dependencies = []
+
+[project.scripts]
+my-app = "my_app.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/my_app"]
+
+# ===========================================================================
+# Environments
+#
+# Each environment can declare its own `workspace.members`. Members are
+# installed as editable packages, so edits to a member's source are picked up
+# immediately. Members may be given as:
+#   - a string path:                     "packages/cli"
+#   - a glob:                            "packages/*"
+#   - a table with extras (features):    { path = "packages/core", features = ["pretty"] }
+#
+# Docs: https://hatch.pypa.io/latest/how-to/environment/workspace/
+# ===========================================================================
+
+# --- default -------------------------------------------------------------
+# Discovers every project under `packages/` with a glob, then filters one out
+# with `exclude`. This is the env you get with a bare `hatch run ...`.
+[tool.hatch.envs.default]
+workspace.members = ["packages/*"]
+workspace.exclude = ["packages/experimental"]
+
+# --- test ----------------------------------------------------------------
+# A different member set: each member is installed *with* a specific extra via
+# `features`, so the optional dependencies (`rich`, `PyYAML`) are available.
+# `parallel` speeds up installation of the members. The matrix runs the suite
+# across multiple Python versions.
+[tool.hatch.envs.test]
+workspace.members = [
+    { path = "packages/core", features = ["pretty"] },
+    { path = "packages/utils", features = ["yaml"] },
+    "packages/cli",
+]
+workspace.parallel = true
+dependencies = [
+    "pytest",
+    "coverage[toml]",
+]
+
+[tool.hatch.envs.test.scripts]
+run = "pytest {args:tests packages}"
+cov = [
+    "coverage run -m pytest {args:tests packages}",
+    "coverage report",
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.10", "3.11", "3.12"]
+
+# --- lint ----------------------------------------------------------------
+# Yet another member set (no `experimental`, no top-level-only tooling), plus a
+# dev tool that is not a workspace member. Shows that workspace members and
+# regular dependencies coexist in the same environment.
+[tool.hatch.envs.lint]
+workspace.members = [
+    "packages/core",
+    "packages/utils",
+    "packages/cli",
+]
+dependencies = ["ruff>=0.5"]
+
+[tool.hatch.envs.lint.scripts]
+check = "ruff check {args:src packages}"
+
+# ===========================================================================
+# Tooling config
+# ===========================================================================
+[tool.coverage.run]
+source_pkgs = ["my_app", "acme_core", "acme_utils", "acme_cli"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.ruff]
+line-length = 100

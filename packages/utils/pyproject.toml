@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ---------------------------------------------------------------------------
+# `acme-utils` — helper library built on top of `acme-core`.
+#
+# Demonstrates an *inter-member dependency*: it depends on `acme-core`, which is
+# itself a workspace member. Because both are members, Hatch installs the local
+# editable copies instead of resolving `acme-core` from PyPI.
+# ---------------------------------------------------------------------------
+[project]
+name = "acme-utils"
+version = "0.1.0"
+description = "Helper utilities built on acme-core"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "acme-core",
+]
+
+[project.optional-dependencies]
+yaml = ["PyYAML>=6"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acme_utils"]

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ---------------------------------------------------------------------------
+# `acme-experimental` — intentionally EXCLUDED from the workspace.
+#
+# It lives under `packages/`, so the glob `packages/*` would normally pick it
+# up. The root config filters it out with:
+#
+#     workspace.exclude = ["packages/experimental"]
+#
+# so it is never installed into the default environment.
+# ---------------------------------------------------------------------------
+[project]
+name = "acme-experimental"
+version = "0.0.1"
+description = "Experimental package excluded from the workspace"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acme_experimental"]

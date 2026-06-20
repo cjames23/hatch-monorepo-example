@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ---------------------------------------------------------------------------
+# `acme-core` — the base library of the monorepo.
+#
+# A fully standalone project: it can be built, tested and published on its own.
+# It is also referenced as a workspace member by the root `pyproject.toml`.
+# ---------------------------------------------------------------------------
+[project]
+name = "acme-core"
+version = "0.1.0"
+description = "Base library for the ACME monorepo"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
+
+# Optional dependency groups (a.k.a. "extras"). A workspace member can be
+# installed *with* one of these extras by using the `features` option in the
+# root config, e.g. `{ path = "packages/core", features = ["pretty"] }`.
+[project.optional-dependencies]
+pretty = ["rich>=13"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acme_core"]
