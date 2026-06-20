@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ---------------------------------------------------------------------------
+# `acme-cli` — a command-line front-end that depends on two other members.
+# ---------------------------------------------------------------------------
+[project]
+name = "acme-cli"
+version = "0.1.0"
+description = "Command-line interface for the ACME monorepo"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "acme-core",
+    "acme-utils",
+]
+
+[project.scripts]
+acme = "acme_cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acme_cli"]
