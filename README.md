@@ -106,6 +106,46 @@ hatch run lint:check
 hatch env show
 ```
 
+## Building all members into one folder
+
+`hatch build` builds a single project (the one rooted at the current directory)
+and writes its artifacts to the location you pass it. To build the **whole
+monorepo** and collect every wheel/sdist in one place, build each project in
+turn into a shared output directory.
+
+[`scripts/build_all.py`](scripts/build_all.py) does exactly that — it builds the
+root project plus every member (skipping the excluded `experimental`, mirroring
+`workspace.exclude`) into a single top-level `dist/`. It's a small, cross-platform
+Python helper that discovers the members dynamically, so it never drifts from the
+package set:
+
+```bash
+python scripts/build_all.py            # -> ./dist
+python scripts/build_all.py /tmp/out   # -> custom directory
+
+# or via the `build` environment:
+hatch run build:all
+hatch run build:all /tmp/out
+```
+
+Result — one folder with every project's artifacts:
+
+```
+dist/
+├── my_app-0.1.0-py3-none-any.whl
+├── my_app-0.1.0.tar.gz
+├── acme_core-0.1.0-py3-none-any.whl
+├── acme_core-0.1.0.tar.gz
+├── acme_utils-0.1.0-py3-none-any.whl
+├── acme_utils-0.1.0.tar.gz
+├── acme_cli-0.1.0-py3-none-any.whl
+└── acme_cli-0.1.0.tar.gz
+```
+
+The key idea is that `hatch build dist/` (an explicit output **location**) lets
+every project target the same directory; the script cleans that directory once
+up front rather than per-project, so earlier members' artifacts aren't wiped.
+
 > Requires Hatch with workspace support (`hatch >= 1.16`). The `test` matrix
 > needs Python 3.10, 3.11, and 3.12 available to Hatch; trim the matrix in
 > `pyproject.toml` if you only have some of them.
